@@ -14,7 +14,8 @@ namespace RFID
             if(userSelection == "r" | userSelection == "R")
             {
                 Console.WriteLine("Place Card to Read");
-                Read.Program.ReadCode();
+                Reader.init();
+                //Reader.Program.ReadCode();
             }
 
             if(userSelection == "w" | userSelection == "W")

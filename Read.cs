@@ -11,24 +11,57 @@ using Iot.Device.Pn532.ListPassive;
 
 namespace Read
 {
-    public class Program
+    public class Reader
     {
-        public static void ReadCode()
+        private static Pn532 rfidHat;
+        public static void init()
         {
-            // Creating the device class through serial: /dev/ttyS0
             try
             {
-                string device = "/dev/ttyS0";
-                var reader = new Pn532(device);
+                string reader = "/dev/ttyS0";
+                rfidHat = new Pn532(reader);
                 byte[] readUid = null;
-                readUid = reader.ListPassiveTarget(MaxTarget.One, TargetBaudRate.B106kbpsTypeA);
+                readUid = rfidHat.ListPassiveTarget(MaxTarget.One, TargetBaudRate.B106kbpsTypeA);
                 Thread.Sleep(200);
 
                 do
                 {
-                    var decrypted = reader.TryDecode106kbpsTypeA(readUid.AsSpan().Slice(1));
+                    var decrypted = rfidHat.TryDecode106kbpsTypeA(readUid.AsSpan().Slice(1));
                     var uid = BitConverter.ToString(decrypted.NfcId);
-                    Console.WriteLine("Unique User ID:  " + uid);                    
+                    Console.WriteLine("Unique User ID:  " + uid);
+                    rfidHat.ReleaseTarget(1);
+                    close();
+                    break; 
+                }
+
+                while(readUid != null);
+                
+                close();
+
+            }
+            
+            catch(System.Exception)
+            {init();}
+        }
+        public static void close()
+        {
+            if (rfidHat != null)
+            {
+                Thread.Sleep(500);
+                rfidHat.Dispose();
+                RFID.Menu.Main();
+            }
+        }
+        //public static void ReadCode()
+        //{
+            // Creating the device class through serial: /dev/ttyS0
+            //try
+            //{
+                //do
+                //{
+                    //var decrypted = reader.TryDecode106kbpsTypeA(readUid.AsSpan().Slice(1));
+                    //var uid = BitConverter.ToString(decrypted.NfcId);
+                    //Console.WriteLine("Unique User ID:  " + uid);                    
                     
                     /* Use the following code to read specific blocks
 
@@ -64,21 +97,23 @@ namespace Read
 
                     End codeblock */
 
-                    reader.ReleaseTarget(1);
-                    break;
-                }
 
-                while(readUid != null);
+                //}
 
-                Thread.Sleep(500);
-                reader.Dispose();
-                ReadCode();
-            }
+                //while(readUid != null);
 
-            catch (System.Exception)
-            { 
-                ReadCode();
-            }        
-        }
+                //Thread.Sleep(500);
+                //reader.Dispose();
+                //ReadCode();
+            //}
+
+            //catch (System.Exception)
+            //{ 
+            //    ReadCode();
+            //}        
+        //}
+
+
     }    
+
 }
